@@ -2,17 +2,6 @@
 #include <stdlib.h>
 #include "aodv_table.h"
 
-struct aodv_table_entry {
-    int start;
-    int hop;
-    int next_node;
-    struct aodv_table_entry *next;
-};
-
-struct aodv_table {
-    struct aodv_table_entry *head;
-};
-
 struct aodv_table* aodv_init_table()
 {
     struct aodv_table *table = malloc(sizeof(struct aodv_table*));

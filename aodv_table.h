@@ -1,3 +1,14 @@
+struct aodv_table_entry {
+    int start;
+    int hop;
+    int next_node;
+    struct aodv_table_entry *next;
+};
+
+struct aodv_table {
+    struct aodv_table_entry *head;
+};
+
 struct aodv_table_entry;
 
 struct aodv_table;

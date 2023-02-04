@@ -3,24 +3,6 @@
 #include <stdlib.h>
 #include "aodv_message.h"
 
-struct RREQ_message {
-    int start;
-    int dest;
-    int hop_to_start;
-};
-
-struct RREP_message {
-    int start;
-    int dest;
-    char* path;
-};
-
-struct RREPACK_message {
-    int start;
-    int dest;
-    int rrep_receiver;
-};
-
 /*
     Identify the message type from the message string
 */
@@ -48,8 +30,9 @@ struct RREQ_message* RREQ_parse(char* msg)
     char str[80];
     strcpy(str, msg);
 
+    int i = 0;
     char *token = strtok(str, delim);
-    for (int i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
@@ -107,7 +90,8 @@ struct RREP_message* RREP_parse(char* msg)
     strcpy(str, msg);
 
     char *token = strtok(str, delim);
-    for (int i = 0; i < 3; i++) {
+    int i = 0;
+    for (i = 0; i < 3; i++) {
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
@@ -179,7 +163,8 @@ struct RREPACK_message* RREPACK_parse(char* msg)
     strcpy(str, msg);
 
     char *token = strtok(str, delim);
-    for (int i = 0; i < 3; i++) {
+    int i = 0;
+    for (i = 0; i < 3; i++) {
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
