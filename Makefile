@@ -18,7 +18,7 @@ sim: aodv_node.csc aodv_node.c
 simulation:
 	java -jar $(CONTIKI)/tools/cooja/dist/cooja.jar -contiki=$(CONTIKI)
 
-testfiles := aodv_utils_test.c ${PWD}/aodv_utils/aodv_message.c ${PWD}/aodv_utils/aodv_table.c  
+testfiles := aodv_utils_test.c aodv_message.c aodv_table.c  
 test-utils: $(testfiles)
 	gcc $(testfiles) -o test
 
