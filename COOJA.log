@@ -1,0 +1,9 @@
+[21:09:23 - main] [Cooja.java:3181] [WARN] - JAVA_HOME environment variable not set, Cooja motes may not compile
+[21:09:24 - AWT-EventQueue-0] [Cooja.java:2865] [INFO] - External tools default settings: /external_tools_linux_64.config
+[21:09:24 - AWT-EventQueue-0] [Cooja.java:2895] [INFO] - External tools user settings: /home/tkn/.cooja.user.properties
+[21:09:31 - AWT-EventQueue-0] [Simulation.java:420] [INFO] - Simulation random seed: 123456
+[21:09:31 - AWT-EventQueue-0] [Visualizer.java:256] [INFO] - Registered external visualizer: org.contikios.cooja.plugins.skins.DGRMVisualizerSkin
+[21:10:06 - AWT-EventQueue-0] [Cooja.java:4146] [WARN] - Path is not portable: '/home/tkn/nes/aodv/aodv_node.c
+[21:10:07 - AWT-EventQueue-0] [CompileContiki.java:140] [INFO] - > make aodv_node.sky TARGET=sky 
+[21:10:49 - AWT-EventQueue-0] [CompileContiki.java:140] [INFO] - > make clean TARGET=sky 
+[21:10:51 - AWT-EventQueue-0] [CompileContiki.java:140] [INFO] - > make clean TARGET=sky 

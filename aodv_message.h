@@ -2,6 +2,24 @@
 #define R_REP 1
 #define R_REP_ACK 2
 
+struct RREQ_message {
+    int start;
+    int dest;
+    int hop_to_start;
+};
+
+struct RREP_message {
+    int start;
+    int dest;
+    char* path;
+};
+
+struct RREPACK_message {
+    int start;
+    int dest;
+    int rrep_receiver;
+};
+
 struct RREQ_message;
 
 struct RREP_message;
