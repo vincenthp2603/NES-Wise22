@@ -3,6 +3,15 @@
 #include <stdlib.h>
 #include "aodv_message.h"
 
+void clean_msg_buffer(char *msg)
+{
+    int i;
+    for (i = 0; i < 30; i++)
+    {
+        msg[i] = 0;
+    }
+}
+
 /*
     Identify the message type from the message string
 */
@@ -23,11 +32,11 @@ int parse_message_type(char* msg)
 /*
     RREQ
 */
-struct RREQ_message* RREQ_parse(char* msg)
+struct RREQ_message RREQ_parse(char* msg)
 {
-    struct RREQ_message* rreq_msg = malloc(sizeof(struct RREQ_message*));
+    struct RREQ_message rreq_msg;
     const char* delim = "_";
-    char str[80];
+    char str[30];
     strcpy(str, msg);
 
     int i = 0;
@@ -36,57 +45,50 @@ struct RREQ_message* RREQ_parse(char* msg)
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
-                rreq_msg->start = atoi(token);
+                rreq_msg.start = atoi(token);
                 break;
             case 1:
-                rreq_msg->dest = atoi(token);
+                rreq_msg.dest = atoi(token);
                 break;
             default:
-                rreq_msg->hop_to_start = atoi(token);
+                rreq_msg.hop_to_start = atoi(token);
         }
     }
     return rreq_msg;
 }
 
-char* RREQ_stringify(struct RREQ_message* msg)
+void RREQ_stringify(struct RREQ_message msg,char *msg_str)
 {
-    char *msg_str = malloc(80);
+    clean_msg_buffer(msg_str);
     strcat(msg_str, "RREQ_");
 
     char start_str[2];
     start_str[1] = '\0';
-    start_str[0] = (char) msg->start + 48; // ascii hack
+    start_str[0] = (char) msg.start + 48; // ascii hack
     strcat(msg_str, start_str);
     strcat(msg_str, "_");    
 
     char dest_str[2];
     dest_str[1] = '\0';
-    dest_str[0] = (char) msg->dest + 48;
+    dest_str[0] = (char) msg.dest + 48;
     strcat(msg_str, dest_str);
     strcat(msg_str, "_");
 
     char hop_str[2];
     hop_str[1] = '\0';
-    hop_str[0] = (char) msg->hop_to_start + 48;
+    hop_str[0] = (char) msg.hop_to_start + 48;
     strcat(msg_str, hop_str); 
-
-    return msg_str;
-}
-
-void RREQ_free(struct RREQ_message* msg)
-{
-    free(msg);
 }
 
 /*
     RREP
 */
-struct RREP_message* RREP_parse(char* msg)
+struct RREP_message RREP_parse(char* msg)
 {
     
-    struct RREP_message* rrep_msg = malloc(sizeof(struct RREP_message*));
+    struct RREP_message rrep_msg;
     const char* delim = "_";
-    char str[80];
+    char str[30];
     strcpy(str, msg);
 
     char *token = strtok(str, delim);
@@ -95,50 +97,43 @@ struct RREP_message* RREP_parse(char* msg)
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
-                rrep_msg->start = atoi(token);
+                rrep_msg.start = atoi(token);
                 break;
             case 1:
-                rrep_msg->dest = atoi(token);
+                rrep_msg.dest = atoi(token);
                 break;
             default:
-                rrep_msg->path = malloc(sizeof(token));
-                strcpy(rrep_msg->path, token);
+                strcpy(rrep_msg.path, token);
         }
     }
     return rrep_msg;
 }
 
-char* RREP_stringify(struct RREP_message* msg)
+void RREP_stringify(struct RREP_message msg, char *msg_str)
 {
-    char *msg_str = malloc(80);
+    clean_msg_buffer(msg_str);
     strcat(msg_str, "RREP_");
 
     char start_str[2];
     start_str[1] = '\0';
-    start_str[0] = (char) msg->start + 48;
+    start_str[0] = (char) msg.start + 48;
     strcat(msg_str, start_str);
     strcat(msg_str, "_");    
 
     char dest_str[2];
     dest_str[1] = '\0';
-    dest_str[0] = (char) msg->dest + 48;
+    dest_str[0] = (char) msg.dest + 48;
     strcat(msg_str, dest_str);
     strcat(msg_str, "_");
 
-    strcat(msg_str, msg->path); 
-
-    return msg_str;
+    strcat(msg_str, msg.path); 
 }
 
-void RREP_add_node_to_path(struct RREP_message* msg, int node)
+void RREP_add_node_to_path(struct RREP_message *msg, int node)
 {
-    if (!msg->path) {
-        msg->path = malloc(40);
-    }
-
     char old_path[40];
     char new_path[50];
-    
+   
     strcpy(old_path, msg->path);
     new_path[0] = (char) node + 48;
     new_path[1] = '-';
@@ -146,20 +141,14 @@ void RREP_add_node_to_path(struct RREP_message* msg, int node)
     strcpy(msg->path, new_path);
 }
 
-void RREP_free(struct RREP_message* msg)
-{
-    free(msg->path);
-    free(msg);
-}
-
 /*
     RREPACK
 */
-struct RREPACK_message* RREPACK_parse(char* msg)
+struct RREPACK_message RREPACK_parse(char* msg)
 {
-    struct RREPACK_message* rrepack_msg = malloc(sizeof(struct RREPACK_message*));
+    struct RREPACK_message rrepack_msg;
     const char* delim = "_";
-    char str[80];
+    char str[30];
     strcpy(str, msg);
 
     char *token = strtok(str, delim);
@@ -168,44 +157,37 @@ struct RREPACK_message* RREPACK_parse(char* msg)
         token = strtok(NULL, "_");
         switch (i) {
             case 0:
-                rrepack_msg->start = atoi(token);
+                rrepack_msg.start = atoi(token);
                 break;
             case 1:
-                rrepack_msg->dest = atoi(token);
+                rrepack_msg.dest = atoi(token);
                 break;
             default:
-                rrepack_msg->rrep_receiver = atoi(token);
+                rrepack_msg.rrep_receiver = atoi(token);
         }
     }
     return rrepack_msg;
 }
 
-char* RREPACK_stringify(struct RREPACK_message* msg)
+void RREPACK_stringify(struct RREPACK_message msg, char *msg_str)
 {
-    char *msg_str = malloc(80);
+    clean_msg_buffer(msg_str);
     strcat(msg_str, "RREPACK_");
 
     char start_str[2];
     start_str[1] = '\0';
-    start_str[0] = (char) msg->start + 48; // ascii hack
+    start_str[0] = (char) msg.start + 48; // ascii hack
     strcat(msg_str, start_str);
     strcat(msg_str, "_");    
 
     char dest_str[2];
     dest_str[1] = '\0';
-    dest_str[0] = (char) msg->dest + 48;
+    dest_str[0] = (char) msg.dest + 48;
     strcat(msg_str, dest_str);
     strcat(msg_str, "_");
 
     char rrep_receiver_str[2];
     rrep_receiver_str[1] = '\0';
-    rrep_receiver_str[0] = (char) msg->rrep_receiver + 48;
+    rrep_receiver_str[0] = (char) msg.rrep_receiver + 48;
     strcat(msg_str, rrep_receiver_str); 
-
-    return msg_str;
-}
-
-void RREPACK_free(struct RREPACK_message* msg)
-{
-    free(msg);
 }

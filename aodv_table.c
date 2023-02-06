@@ -2,161 +2,199 @@
 #include <stdlib.h>
 #include "aodv_table.h"
 
-struct aodv_table* aodv_init_table()
+static struct aodv_table_entry aodv_routing_table[AODV_TABLE_SIZE];
+
+void aodv_init_table()
 {
-    struct aodv_table *table = malloc(sizeof(struct aodv_table*));
-    table->head = NULL;
-    return table;
+    int i = 0;
+    for(i = 0; i < AODV_TABLE_SIZE; i++)
+    {
+        aodv_routing_table[i].in_use = 0;
+    }
 };
 
-void aodv_print_table(struct aodv_table *table)
+void aodv_scroll_up_table_entries(int start_index)
+{
+    if (!start_index)
+    {
+        start_index++;
+    }
+    int i;
+    for (i = start_index; i < AODV_TABLE_SIZE; i++)
+    {
+        struct aodv_table_entry *curr = &aodv_routing_table[i];    
+        struct aodv_table_entry *prev = &aodv_routing_table[i-1];
+        prev->start = curr->start;
+        prev->hop = curr->hop;
+        prev->next_node = curr->next_node;
+        prev->in_use = curr->in_use;
+    }
+};
+
+void aodv_scroll_down_table_entries(int start_index)
+{
+    if (start_index == AODV_TABLE_SIZE - 1)
+    {
+        start_index--;
+    }
+    int i;
+    for (i = AODV_TABLE_SIZE - 2; i >= start_index; i--)
+    {
+        struct aodv_table_entry *curr = &aodv_routing_table[i];    
+        struct aodv_table_entry *next = &aodv_routing_table[i+1];
+        next->start = curr->start;
+        next->hop = curr->hop;
+        next->next_node = curr->next_node;
+        next->in_use = curr->in_use;
+        curr->in_use = 0;
+    }
+};
+
+void aodv_delete_entry(int start, int next_node)
+{
+    int to_delete_index = -1;
+    int i;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
+    {
+        struct aodv_table_entry entry = aodv_routing_table[i];
+        if (entry.start == start && entry.next_node == next_node)
+        {
+            to_delete_index = i;
+        }
+    }
+    if (to_delete_index != -1)
+    {
+        if (to_delete_index == AODV_TABLE_SIZE - 1)
+        {
+            aodv_routing_table[to_delete_index].in_use = 0;
+            return;
+        }
+        aodv_scroll_up_table_entries(to_delete_index+1);
+    }
+}
+
+void aodv_print_table()
 {
     printf("----- AODV Routing table ------\n");
     printf("|  Start   |   Hop   |  Next  |\n");
-    struct aodv_table_entry *ptr = table->head;
-    while (ptr != NULL)
+    int i = 0;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
     {
+        struct aodv_table_entry *entry = &aodv_routing_table[i];
+        if (!entry->in_use)
+        {
+            break;
+        }
         printf("-------------------------------\n");
-        printf("|     %d    |    %d    |    %d   |\n", ptr->start, ptr->hop, ptr->next_node);
-        ptr = ptr->next;
+        printf("|     %d    |    %d    |    %d   |\n", entry->start, entry->hop, entry->next_node);
     }
     printf("-------------------------------\n\n");
 }
 
-struct aodv_table_entry* aodv_create_entry(int start, int hop, int next_node)
+struct aodv_table_entry aodv_create_entry(int start, int hop, int next_node)
 {
-    struct aodv_table_entry *entry = malloc(sizeof(struct aodv_table_entry*));
-    entry->start = start;
-    entry->hop = hop;
-    entry->next_node = next_node;
+    struct aodv_table_entry entry;
+    entry.start = start;
+    entry.hop = hop;
+    entry.next_node = next_node;
+    entry.in_use = 1;
     return entry; 
 }
 
-struct aodv_table_entry* aodv_get_best_entry(struct aodv_table *table, int start)
+void aodv_copy_entry(struct aodv_table_entry **dest, struct aodv_table_entry src)
 {
-    struct aodv_table_entry *ptr = table->head;
-    while (ptr != NULL)
-    {
-        if (ptr->start == start)
-        {
-            break;
-        }
-        ptr = ptr->next;
-    }
-    return ptr;
+    (*dest)->start = src.start;
+    (*dest)->hop = src.hop;
+    (*dest)->next_node = src.next_node;
+    (*dest)->in_use = src.in_use;
 }
 
-struct aodv_table_entry* aodv_get_best_entry_for_next_node(struct aodv_table *table, int start, int next_node)
+struct aodv_table_entry *aodv_get_best_entry(int start)
 {
-    struct aodv_table_entry *ptr = table->head;
-    while (ptr != NULL)
+    int i;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
     {
-        if (ptr->start == start && ptr->next_node == next_node)
+        struct aodv_table_entry *entry = &aodv_routing_table[i];
+        if (entry->in_use && entry->start == start)
         {
-            break;
+            return entry;
         }
-        ptr = ptr->next;
     }
-    return ptr;
+    return NULL;
 }
 
-void aodv_delete_entry(struct aodv_table **table, int start, int next_node)
+struct aodv_table_entry *aodv_get_best_entry_with_next_node(int start, int next_node)
 {
-    struct aodv_table_entry *ptr = (*table)->head;
-    if (ptr && ptr->start == start && ptr->next_node == next_node)
+    int i;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
     {
-        (*table)->head = ptr->next;
-        free(ptr);
-        return;
-    }
-    while (ptr != NULL)
-    {
-        if (ptr->next && ptr->next->start == start && ptr->next->next_node == next_node)
+        struct aodv_table_entry *entry = &aodv_routing_table[i];
+        if (entry->in_use && entry->start == start && entry->next_node == next_node)
         {
-            struct aodv_table_entry *to_delete = ptr->next;
-            ptr->next = to_delete->next;
-            free(to_delete);
-            return;
+            return entry;
         }
-        ptr = ptr->next;   
     }
+    return NULL;
 }
 
-void aodv_insert_entry(struct aodv_table **table, struct aodv_table_entry *entry)
+int aodv_insert_entry(struct aodv_table_entry new_entry)
 {
-    struct aodv_table_entry *dup_entry = aodv_get_best_entry_for_next_node(*table, entry->start, entry->next_node);
+    struct aodv_table_entry *dup_entry = aodv_get_best_entry_with_next_node(new_entry.start, new_entry.next_node);
     if (dup_entry)
     {
-        if (dup_entry->hop <= entry->hop)
+        if (dup_entry->hop <= new_entry.hop)
         {
-            return;
-        } else
+            return 0;
+        }
+        else
         {
-            aodv_delete_entry(table, dup_entry->start, dup_entry->next_node);
+            aodv_delete_entry(dup_entry->start, dup_entry->next_node);
         }
     }
-    
-    struct aodv_table_entry *head = (*table)->head; 
-    if (!head || entry->start < head->start || (entry->start == head->start && entry->hop < head->hop))
+        
+    int insert_index = -1;
+    int i;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
     {
-        entry->next = head;
-        (*table)->head = entry;
-        return;
-    }
-
-    struct aodv_table_entry *ptr = (*table)->head;
-
-    while (entry->start > ptr->start)
-    {
-        if (!ptr->next) 
+        struct aodv_table_entry *curr = &aodv_routing_table[i];
+        if (!curr->in_use)
         {
-            ptr->next = entry;
-            return;
-        } else if (ptr->next->start > entry->start)
-        {
-            entry->next = ptr->next;
-            ptr->next = entry;
-            return;
-        } else if (ptr->next->start == entry->start && ptr->next->start != ptr->start)
-        {
+            insert_index = i;
             break;
         }
-        ptr = ptr->next;
-        continue;
-    }
-
-    if (!ptr->next || (ptr->next->hop >= entry->hop))
-    {
-        entry->next = ptr->next;
-        ptr->next = entry;
-        return;        
-    }
-
-    while (entry->hop >= ptr->hop)
-    {
-        if (!ptr->next) 
+        
+        if (curr->start < new_entry.start)
         {
-            ptr->next = entry;
-            return;
-        } else if ((ptr->next->hop >= entry->hop && ptr->start == entry->start) || ptr->next->start != entry->start)
+            continue;
+        } 
+        else if (curr->start == new_entry.start)
         {
-            entry->next = ptr->next;
-            ptr->next = entry;
-            return;
+            if (curr->hop <= new_entry.hop)
+            {
+                continue;
+            } 
+            else
+            {
+                insert_index = i;
+                aodv_scroll_down_table_entries(insert_index);
+                break;
+            }
         }
-        ptr = ptr->next;
-        continue;
-    }
-}
+        else
+        {
+            insert_index = i;
+            aodv_scroll_down_table_entries(insert_index);
+            break;
+        }
 
-void aodv_free_table(struct aodv_table *table)
-{
-    struct aodv_table_entry *ptr = table->head;
-    while(ptr != NULL)
-    {
-        struct aodv_table_entry *to_free = ptr;
-        ptr = ptr->next;
-        free(to_free);
     }
-    free(table);
+
+    if (insert_index != -1)
+    {
+        struct aodv_table_entry *entry = &aodv_routing_table[insert_index];
+        aodv_copy_entry(&entry, new_entry);
+        return 1;
+    }
+
+    return 0;
 }
