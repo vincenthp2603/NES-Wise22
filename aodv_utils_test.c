@@ -10,13 +10,12 @@ int main()
     printf("/*--------------------------------*/\n\n");
 
     printf("%d\n", parse_message_type("RREQ_1_5_2"));
-    printf("%d\n", parse_message_type("RREP_1_5_3-5"));
+    printf("%d\n", parse_message_type("RREP_1_5_3"));
     printf("%d\n", parse_message_type("RREPACK_1_5_4"));
     
     struct RREQ_message rreq_msg = RREQ_parse("RREQ_1_5_2");
-    struct RREP_message rrep_msg = RREP_parse("RREP_1_5_3-5");
+    struct RREP_message rrep_msg = RREP_parse("RREP_1_5_3");
     struct RREPACK_message rrepack_msg = RREPACK_parse("RREPACK_1_5_4");
-    RREP_add_node_to_path(&rrep_msg, 2);
     
     char msg_str[30];
     RREQ_stringify(rreq_msg, msg_str);
