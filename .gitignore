@@ -1,2 +1,6 @@
 test
 obj_sky/**
+aodv_node.sky
+symbols*
+COOJA.log
+contiki-sky.*

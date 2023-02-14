@@ -6,7 +6,7 @@ ifndef TARGET
   TARGET=sky
 endif
 
-PROJECT_SOURCEFILES += aodv_message.c aodv_table.c
+PROJECT_SOURCEFILES += aodv_message.c aodv_table.c aodv_down_detector.c
 
 all: aodv_node.sky
 
