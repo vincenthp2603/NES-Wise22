@@ -10,7 +10,7 @@ struct aodv_table_entry {
 
 void aodv_init_table();
 
-void aodv_delete_entry(int start, int next_node);
+void aodv_delete_entry(int start);
 
 void aodv_print_table();
 

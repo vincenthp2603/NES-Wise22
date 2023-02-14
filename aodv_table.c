@@ -50,7 +50,31 @@ void aodv_scroll_down_table_entries(int start_index)
     }
 };
 
-void aodv_delete_entry(int start, int next_node)
+void aodv_delete_entry(int start)
+{
+    int to_delete_index = -1;
+    int i;
+    for (i = 0; i < AODV_TABLE_SIZE; i++)
+    {
+        struct aodv_table_entry entry = aodv_routing_table[i];
+        if (entry.start == start)
+        {
+            to_delete_index = i;
+            break;
+        }
+    }
+    if (to_delete_index != -1)
+    {
+        if (to_delete_index == AODV_TABLE_SIZE - 1)
+        {
+            aodv_routing_table[to_delete_index].in_use = 0;
+            return;
+        }
+        aodv_scroll_up_table_entries(to_delete_index+1);
+    }    
+}
+
+void aodv_delete_entry_with_next_node(int start, int next_node)
 {
     int to_delete_index = -1;
     int i;
@@ -60,6 +84,7 @@ void aodv_delete_entry(int start, int next_node)
         if (entry.start == start && entry.next_node == next_node)
         {
             to_delete_index = i;
+            break;
         }
     }
     if (to_delete_index != -1)
@@ -148,7 +173,7 @@ int aodv_insert_entry(struct aodv_table_entry new_entry)
         }
         else
         {
-            aodv_delete_entry(dup_entry->start, dup_entry->next_node);
+            aodv_delete_entry_with_next_node(dup_entry->start, dup_entry->next_node);
         }
     }
         
@@ -171,13 +196,16 @@ int aodv_insert_entry(struct aodv_table_entry new_entry)
         {
             if (curr->hop <= new_entry.hop)
             {
-                continue;
+                return 0;
             } 
             else
             {
-                insert_index = i;
-                aodv_scroll_down_table_entries(insert_index);
-                break;
+                //insert_index = i;
+                //aodv_scroll_down_table_entries(insert_index);
+                //break;
+                curr->hop = new_entry.hop;
+                curr->next_node = new_entry.next_node;
+                return 1;
             }
         }
         else
